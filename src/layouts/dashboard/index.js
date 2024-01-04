@@ -30,7 +30,7 @@ function Dashboard() {
 
   const createdAt = data?.map((el) => {
     const dateObject = new Date(el.createdAt);
-    return dateObject.getSeconds();
+    return `${dateObject.getMinutes()}:${dateObject.getSeconds()}`;
   });
   const cluster = data?.map((el) => el.cluster);
   const cluster1 =
