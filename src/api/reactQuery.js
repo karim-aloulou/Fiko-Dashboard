@@ -1,11 +1,10 @@
 import axios from "axios";
 
 export const fetchData = (limit, openedPrograms) => async () => {
-  console.log(openedPrograms);
   const { data } = await axios.get(
     `http://localhost:8080/api/data?limit=${limit}&openedPrograms=${openedPrograms}`
   );
-  console.log(data?.data);
+  console.log("data", data);
   return data?.data;
 };
 
