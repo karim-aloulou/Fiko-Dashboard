@@ -18,21 +18,40 @@ import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 // Dashboard components
 import { useQuery } from "react-query";
 import { fetchData } from "api/reactQuery";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { TextField } from "@mui/material";
 
 function Dashboard() {
-  const { sales, tasks } = reportsLineChartData;
-  const { data, isLoading, refetch } = useQuery("dashboardData", fetchData);
+  const [openedPrograms, setOpenedPrograms] = useState(2);
+  const [limit, setLimit] = useState(100);
+
+  const handleChange = (value, setChange) => {
+    setChange(value);
+  };
+  const { data, isLoading, refetch } = useQuery("dashboardData", fetchData(limit, openedPrograms));
   useEffect(() => {
     const updateTimeout = setTimeout(() => {
       // Manually trigger a refetch to simulate an update
       refetch();
-    }, 1000); // 10 seconds
+    }, 100); // 10 seconds
 
     // Clean up the timeout to avoid triggering the update after unmounting
     return () => clearTimeout(updateTimeout);
-  }, [refetch]);
-  console.log("data", data);
+  }, [refetch, openedPrograms, limit]);
+
+  const createdAt = data?.map((el) => {
+    const dateObject = new Date(el.createdAt);
+    return dateObject.getSeconds();
+  });
+  const cluster = data?.map((el) => el.cluster);
+  const cluster1 =
+    (cluster
+      ?.filter((el) => el === 1)
+      ?.reduce((accumulator, currentValue) => accumulator + currentValue, 0) /
+      createdAt?.length) *
+    100;
+  console.log(typeof cluster1 === NaN);
+  console.log(createdAt?.length);
 
   return (
     <DashboardLayout>
@@ -40,9 +59,36 @@ function Dashboard() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={12} lg={12}>
             <MDBox mb={1.5}>
-              <ComplexStatisticsCard color="dark" icon="weekend" title="Cluster" count={0} />
+              <ComplexStatisticsCard
+                color="dark"
+                icon="weekend"
+                title="Cluster"
+                count={
+                  !typeof cluster1 === NaN
+                    ? `There is opened program equal to ${openedPrograms}, Please verify your account `
+                    : cluster1 > 50
+                    ? `${cluster1 || 0} % Tireness`
+                    : `${cluster1 || 0} % Not Tireness`
+                }
+              />
             </MDBox>
           </Grid>
+        </Grid>
+        <Grid item xs={6} md={6} lg={6}>
+          <label>Opened Programs</label>
+          <TextField
+            value={openedPrograms}
+            type="number"
+            onChange={(event) => handleChange(event.target.value, setOpenedPrograms)}
+          />
+        </Grid>
+        <Grid item xs={6} md={6} lg={6}>
+          <label>Limit</label>
+          <TextField
+            type="number"
+            value={limit}
+            onChange={(event) => handleChange(event.target.value, setLimit)}
+          />
         </Grid>
         <MDBox mt={4.5}>
           <Grid container spacing={3}>
@@ -53,7 +99,13 @@ function Dashboard() {
                     color="primary"
                     title="Eye Aspect Ratio"
                     date="updated 1s ago"
-                    chart={sales}
+                    chart={{
+                      labels: createdAt?.reverse(),
+                      datasets: {
+                        label: "Eye Aspect Ratio",
+                        data: data?.map((el) => el.eyeAspectRatio)?.reverse(),
+                      },
+                    }}
                   />
                 </MDBox>
               </MDBox>
@@ -64,7 +116,13 @@ function Dashboard() {
                   color="success"
                   title="Mouth Aspect Ratio"
                   date="updated 1s ago"
-                  chart={sales}
+                  chart={{
+                    labels: createdAt,
+                    datasets: {
+                      label: "Eye Aspect Ratio",
+                      data: data?.map((el) => el.mouthAspectRatio),
+                    },
+                  }}
                 />
               </MDBox>
             </Grid>
@@ -74,7 +132,13 @@ function Dashboard() {
                   color="dark"
                   title="Eye Pupil"
                   date="updated 1s ago"
-                  chart={tasks}
+                  chart={{
+                    labels: createdAt,
+                    datasets: {
+                      label: "Eye Aspect Ratio",
+                      data: data?.map((el) => el.eyePupil),
+                    },
+                  }}
                 />
               </MDBox>
             </Grid>
@@ -84,7 +148,13 @@ function Dashboard() {
                   color="secondary"
                   title="Head Tilt Degree"
                   date="updated 1s ago"
-                  chart={tasks}
+                  chart={{
+                    labels: createdAt,
+                    datasets: {
+                      label: "Eye Aspect Ratio",
+                      data: data?.map((el) => el.headTiltDegree),
+                    },
+                  }}
                 />
               </MDBox>
             </Grid>

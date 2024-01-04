@@ -24,7 +24,7 @@ const contained = {
     },
 
     "& .material-icon, .material-icons-round, svg": {
-      fontSize: `${pxToRem(16)} !important`,
+      fontSize: `${pxToRem(5)} !important`,
     },
   },
 
