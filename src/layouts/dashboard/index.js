@@ -20,12 +20,20 @@ function Dashboard() {
     setChange(value);
   };
   const { data, refetch } = useQuery("dashboardData", fetchData(limit, openedPrograms));
-  const { data: data1 } = useQuery("dashboardDataAll", fetchData(200000, openedPrograms));
+  const { data: data1, refetch: refetchData1 } = useQuery(
+    "dashboardDataAll",
+    fetchData(200000, openedPrograms)
+  );
   console.log("data1", data1);
+
   useEffect(() => {
     const updateTimeout = setTimeout(() => {
       refetch();
+      refetchData1();
     }, 100);
+    return () => clearTimeout(updateTimeout);
+  }, [refetch, openedPrograms, limit]);
+  useEffect(() => {
     setCreatedAt(
       data?.map((el) => {
         const dateObject = new Date(el.createdAt);
@@ -40,9 +48,7 @@ function Dashboard() {
         data1?.length) *
         100
     );
-    console.log("cluster", cluster.filter((el) => el === 1).length);
-    return () => clearTimeout(updateTimeout);
-  }, [refetch, openedPrograms, limit]);
+  }, [data, data1]);
 
   return (
     <DashboardLayout>
