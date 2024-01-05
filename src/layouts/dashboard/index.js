@@ -13,32 +13,37 @@ import { TextField } from "@mui/material";
 function Dashboard() {
   const [openedPrograms, setOpenedPrograms] = useState(2);
   const [limit, setLimit] = useState(100);
-
+  const [createdAt, setCreatedAt] = useState([]);
+  const [cluster, setCluster] = useState([]);
+  const [cluster1, setCluster1] = useState([]);
   const handleChange = (value, setChange) => {
     setChange(value);
   };
   const { data, refetch } = useQuery("dashboardData", fetchData(limit, openedPrograms));
-  const { data: data1 } = useQuery("dashboardData", fetchData(20000, openedPrograms));
+  const { data: data1 } = useQuery("dashboardDataAll", fetchData(200000, openedPrograms));
   console.log("data1", data1);
   useEffect(() => {
     const updateTimeout = setTimeout(() => {
       refetch();
     }, 100);
-
+    setCreatedAt(
+      data?.map((el) => {
+        const dateObject = new Date(el.createdAt);
+        return `${dateObject.getHours()}:${dateObject.getMinutes()}:${dateObject.getSeconds()}`;
+      })
+    );
+    setCluster(data1?.map((el) => el.cluster));
+    setCluster1(
+      (cluster
+        ?.filter((el) => el === 1)
+        ?.reduce((accumulator, currentValue) => accumulator + currentValue, 0) /
+        data1?.length) *
+        100
+    );
+    console.log("cluster", cluster.filter((el) => el === 1).length);
     return () => clearTimeout(updateTimeout);
   }, [refetch, openedPrograms, limit]);
 
-  const createdAt = data?.map((el) => {
-    const dateObject = new Date(el.createdAt);
-    return `${dateObject.getMinutes()}:${dateObject.getSeconds()}`;
-  });
-  const cluster = data?.map((el) => el.cluster);
-  const cluster1 =
-    (cluster
-      ?.filter((el) => el === 1)
-      ?.reduce((accumulator, currentValue) => accumulator + currentValue, 0) /
-      data1?.length) *
-    100;
   return (
     <DashboardLayout>
       <MDBox>
